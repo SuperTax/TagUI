@@ -2,12 +2,6 @@
 
 /* MULTI-LANGUAGE TRANSLATION SCRIPT FOR TAGUI FRAMEWORK ~ TEBEL.ORG */
 
-// Q1. Why is formatting for this file so messed up? - it's created on the road
-// If you want to know more - https://github.com/kelaberetiv/TagUI/issues/490
-
-// Q2. Is there a beautified version for easier viewing or editing? - yes snapshot below
-// https://github.com/kelaberetiv/TagUI/blob/master/src/media/snapshots/translate.md
-
 // english is used as reference language, define keywords for contextual translation
 
 // list of keywords that are supposed to be at the start of a flow statement
@@ -48,7 +42,7 @@ if ($direction == 'from') {$column_from = 1; $column_to = 0;} else {$column_from
 $language = strtolower($language); $language_count = 0; if (file_exists('languages/' . $language . '.csv')) {
 $language_file = fopen('languages/' . $language . '.csv','r') or die("ERROR - cannot open " . $language . '.csv' . "\n");
 while (!feof($language_file)) {$language_data[$language_count] = fgetcsv($language_file);
-if (@count($language_data[$language_count]) == 0) die("ERROR - empty row found in " . $language . '.csv' . "\n");
+if (count($language_data[$language_count]) == 0) die("ERROR - empty row found in " . $language . '.csv' . "\n");
 $language_count++;} fclose($language_file); $language_count-=1; // -1 for header
 if ($language_data[$language_count][0] == '') $language_count-=1;} // -1 for EOF
 else die("ERROR - missing language file " . $language . '.csv' . "\n");

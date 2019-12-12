@@ -1,10 +1,4 @@
 
-// Q1. Why is formatting for this file so messed up? - it's created on the road
-// If you want to know more - https://github.com/kelaberetiv/TagUI/issues/490
-
-// Q2. Is there a beautified version for easier viewing or editing? - yes snapshot below
-// https://github.com/kelaberetiv/TagUI/blob/master/src/media/snapshots/tagui_header.md
-
 // xpath for object identification
 var xps666 = require('casper').selectXPath;
 
@@ -30,10 +24,6 @@ var r_count = 0; var py_count = 0; var sikuli_count = 0; var chrome_id = 0;
 
 // chrome context for frame handling and targetid for popup handling
 var chrome_context = 'document'; var chrome_targetid = '';
-
-// variables to track frame offset if current context is within a frame
-var frame_step_offset_x = 0; var frame_step_offset_y = 0;
-var original_frame_step_offset_x = 0; var original_frame_step_offset_y = 0;
 
 // variable for ask step to accept user input
 var ask_result = '';
@@ -230,14 +220,14 @@ return false;}
 // friendlier name to use check_tx() in if condition in flow
 function present(element_locator) {if (!element_locator) return false; 
 if (is_sikuli(element_locator)) {var abs_param = abs_file(element_locator); var fs = require('fs');
-if (!fs.exists(abs_param)) {casper.echo('ERROR - cannot find image file for present step').exit();}
+if (!fs.exists(abs_param)) {this.echo('ERROR - cannot find image file for present step').exit();}
 if (sikuli_step("present " + abs_param)) return true; else return false;}
 else return check_tx(element_locator);}
 
 // friendlier name to check element visibility using elementVisible()
 function visible(element_locator) {if (!element_locator) return false;
 if (is_sikuli(element_locator)) {var abs_param = abs_file(element_locator); var fs = require('fs');
-if (!fs.exists(abs_param)) {casper.echo('ERROR - cannot find image file for visible step').exit();}
+if (!fs.exists(abs_param)) {this.echo('ERROR - cannot find image file for visible step').exit();}
 if (sikuli_step("visible " + abs_param)) return true; else return false;}
 else {var element_located = tx(element_locator); var element_visible = casper.elementVisible(element_located);
 // if tx() returns xps666('/html') means that the element is not found, so set element_visible to false
@@ -281,13 +271,6 @@ var x_result = parseInt(fetch_sikuli_text()); clear_sikuli_text(); return x_resu
 mouse_y = function() { // use this function declaration style for sikuli detection in tagui_parse.php
 sikuli_step('vision xy_mouseLocation = Env.getMouseLocation(); output_sikuli_text(str(xy_mouseLocation.getY()));');
 var y_result = parseInt(fetch_sikuli_text()); clear_sikuli_text(); return y_result;}
-
-// get text from clipboard or set text to clipboard
-clipboard = function(clipboard_text) { // use this function declaration style for sikuli detection in tagui_parse.php
-if (!clipboard_text) {sikuli_step('vision output_sikuli_text(App.getClipboard())');
-var clipboard_result = fetch_sikuli_text(); clear_sikuli_text(); return clipboard_result;}
-else {vision_step('clipboard_text = "' + escape_bs(clipboard_text) + '"'); // escape_bs() for \n \t etc
-sikuli_step('vision App.setClipboard(clipboard_text)');}}
 
 /**
  * string cell data sanitiser, returns a CSV formatted string
@@ -358,12 +341,6 @@ return fs.read('tagui.sikuli'+ds+'tagui_sikuli.txt').trim(); else return '';}
 // for clearing text from sikuli optical character recognition
 function clear_sikuli_text() {var ds; if (flow_path.indexOf('/') !== -1) ds = '/'; else ds = '\\';
 var fs = require('fs'); fs.write('tagui.sikuli'+ds+'tagui_sikuli.txt','','w');}
-
-// for setting timeout in sikuli when looking for ui element
-function sikuli_timeout(time_in_seconds) {var ds; if (flow_path.indexOf('/') !== -1) ds = '/'; else ds = '\\';
-var fs = require('fs'); if (fs.exists('tagui.sikuli'+ds+'tagui_sikuli.in'))
-{sikuli_step('vision setAutoWaitTimeout(' + time_in_seconds.toString() + ')');
-sikuli_step('vision wait_timeout = ' + time_in_seconds.toString());}}
 
 // for initialising integration with R
 function r_handshake() { // techo('[connecting to R process]');
@@ -500,21 +477,15 @@ if ((selector.toString().length >= 16) && (selector.toString().substr(0,16) == '
 var ws_message = chrome_step('Runtime.evaluate',{expression: 'var result_bounds = document.evaluate(\''+selector+'\','+chrome_context+',null,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null).snapshotItem(0).getBoundingClientRect(); var result_xy = {x: Math.round(result_bounds.left + result_bounds.width / 2), y: Math.round(result_bounds.top + result_bounds.height / 2)}; result_xy', returnByValue: true});}
 else var ws_message = chrome_step('Runtime.evaluate',{expression: 'var result_bounds = '+chrome_context+'.querySelector(\''+selector+'\').getBoundingClientRect(); var result_xy = {x: Math.round(result_bounds.left + result_bounds.width / 2), y: Math.round(result_bounds.top + result_bounds.height / 2)}; result_xy', returnByValue: true});
 try {var ws_json = JSON.parse(ws_message); if (ws_json.result.result.value.x > 0 && ws_json.result.result.value.y > 0)
-{if (chrome_context !== 'document') {ws_json.result.result.value.x += frame_step_offset_x; // add offset if in frame
-ws_json.result.result.value.y += frame_step_offset_y;}; return ws_json.result.result.value;} else
-{if (chrome_context !== 'document') return {x: frame_step_offset_x, y: frame_step_offset_y};
-else return {x: 0, y: 0};}} catch(e) {return {x: 0, y: 0};}};
+return ws_json.result.result.value; else return {x: 0, y: 0};} catch(e) {return {x: 0, y: 0};}};
 
 chrome.getRect = function(selector) { // helper function to get rectangle boundary coordinates of selector
 if ((selector.toString().length >= 16) && (selector.toString().substr(0,16) == 'xpath selector: '))
 {if (selector.toString().length == 16) selector = ''; else selector = selector.toString().substring(16);
 var ws_message = chrome_step('Runtime.evaluate',{expression: 'var result_bounds = document.evaluate(\''+selector+'\','+chrome_context+',null,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null).snapshotItem(0).getBoundingClientRect(); var result_rect = {top: Math.round(result_bounds.top), left: Math.round(result_bounds.left), width: Math.round(result_bounds.width), height: Math.round(result_bounds.height)}; result_rect', returnByValue: true});}
 else var ws_message = chrome_step('Runtime.evaluate',{expression: 'var result_bounds = '+chrome_context+'.querySelector(\''+selector+'\').getBoundingClientRect(); var result_rect = {top: Math.round(result_bounds.top), left: Math.round(result_bounds.left), width: Math.round(result_bounds.width), height: Math.round(result_bounds.height)}; result_rect', returnByValue: true}); try {var ws_json = JSON.parse(ws_message); // check if width and height are valid before returning coordinates
-if (ws_json.result.result.value.width > 0 && ws_json.result.result.value.height > 0)
-{if (chrome_context !== 'document') {ws_json.result.result.value.left += frame_step_offset_x; // add offset if in frame
-ws_json.result.result.value.top += frame_step_offset_y;}; return ws_json.result.result.value;} else
-{if (chrome_context !== 'document') return {left: frame_step_offset_x, top: frame_step_offset_y, width: 0, height: 0};
-else return {left: 0, top: 0, width: 0, height: 0};}} catch(e) {return {left: 0, top: 0, width: 0, height: 0};}};
+if (ws_json.result.result.value.width > 0 && ws_json.result.result.value.height > 0) return ws_json.result.result.value;
+else return {left: 0, top: 0, width: 0, height: 0};} catch(e) {return {left: 0, top: 0, width: 0, height: 0};}};
 
 chrome.mouse.move = function(selector,y) { // move mouse pointer to center of specified selector or point 
 if (!y) {chrome.scrollIntoViewIfNeeded(selector); var xy = chrome.mouse.getXY(selector);}
@@ -563,7 +534,7 @@ for (var character = 0, length = value.length; character < length; character++) 
 chrome_step('Input.dispatchKeyEvent',{type: 'char', text: value[character]});}};
 
 chrome.selectOptionByValue = function(selector,valueToMatch) { // select dropdown option (base on casperjs issue #1390)
-chrome.evaluate('function() {var selector = \''+selector+'\'; var valueToMatch = \''+valueToMatch+'\'; var found = false; if ((selector.indexOf(\'/\') == 0) || (selector.indexOf(\'(\') == 0)) var select = document.evaluate(selector,'+chrome_context+',null,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null).snapshotItem(0); else var select = '+chrome_context+'.querySelector(selector); if (valueToMatch == \'[clear]\') valueToMatch = \'\'; Array.prototype.forEach.call(select.children, function(opt, i) {if (!found && opt.value == valueToMatch) {select.selectedIndex = i; found = true;}}); var evt = document.createEvent("UIEvents"); evt.initUIEvent("change", true, true); select.dispatchEvent(evt);}');};
+chrome.evaluate('function() {var selector = \''+selector+'\'; var valueToMatch = \''+valueToMatch+'\'; var found = false; if ((selector.indexOf(\'/\') == 0) || (selector.indexOf(\'(\') == 0)) var select = document.evaluate(selector,'+chrome_context+',null,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null).snapshotItem(0); else var select = '+chrome_context+'.querySelector(selector); if (valueToMatch == \'[clear]\') valueToMatch = \'\'; Array.prototype.forEach.call(select.children, function(opt, i) {if (!found && opt.value.indexOf(valueToMatch) !== -1) {select.selectedIndex = i; found = true;}}); var evt = document.createEvent("UIEvents"); evt.initUIEvent("change", true, true); select.dispatchEvent(evt);}');};
 
 chrome.fetchText = function(selector) { // grab text from selector following casperjs logic, but grab only first match
 if ((selector.toString().length >= 16) && (selector.toString().substr(0,16) == 'xpath selector: '))
@@ -599,24 +570,13 @@ else var ws_message = chrome_step('Page.captureScreenshot',{format: format, qual
 try {var ws_json = JSON.parse(ws_message); screenshot_data = ws_json.result.data;} catch(e) {screenshot_data = '';}
 var fs = require('fs'); fs.write(filename,chrome.decode(screenshot_data),'wb');};
 
-/* // backup of previous captureSelector implementation to use Page.captureScreenshot with clipping directly
 chrome.captureSelector = function(filename,selector) { // capture screenshot of selector to png/jpg/jpeg format
 // first capture entire screen, then use casperjs / phantomjs browser to crop image base on selector dimensions
 chrome.capture(filename); var selector_rect = chrome.getRect(selector); // so that there is no extra dependency
 if (selector_rect.width > 0 && selector_rect.height > 0) // from using other libraries or creating html canvas 
 casper.thenOpen(file_url(filename), function() {casper . capture(filename, // spaces around . to avoid replacing 
 {top: selector_rect.top, left: selector_rect.left, width: selector_rect.width, height: selector_rect.height});
-casper.thenOpen('about:blank');});}; // reset phantomjs browser state */
-
-chrome.captureSelector = function(filename,selector) { // capture screenshot of selector to png/jpg/jpeg format
-var selector_rect = chrome.getRect(selector); if (selector_rect.width > 0 && selector_rect.height > 0)
-{var format = 'png'; var quality = 80; var fromSurface = true; var screenshot_data = ''; // options not implemented
-if ((filename.substr(-3).toLowerCase() == 'jpg') || (filename.substr(-4).toLowerCase() == 'jpeg')) format = 'jpeg';
-var clip = {x:selector_rect.left, y:selector_rect.top, width:selector_rect.width, height:selector_rect.height, scale:1};
-var ws_message = 
-chrome_step('Page.captureScreenshot',{format: format, quality: quality, clip: clip, fromSurface: fromSurface});
-try {var ws_json = JSON.parse(ws_message); screenshot_data = ws_json.result.data;} catch(e) {screenshot_data = '';}
-var fs = require('fs'); fs.write(filename,chrome.decode(screenshot_data),'wb');}}
+casper.thenOpen('about:blank');});}; // reset phantomjs browser state
 
 chrome.upload = function(selector,filename) { // upload function to upload file to provided selector
 if ((selector.toString().length >= 16) && (selector.toString().substr(0,16) == 'xpath selector: '))
@@ -650,17 +610,9 @@ return ws_json.result.result.value; else return null;} catch(e) {return null;}};
 
 chrome.withFrame = function(frameInfo,then) { // replace casperjs frame for switching frame context
 var new_context = ''; if (chrome_context == 'document') new_context = 'mainframe_context';
-else if (chrome_context == 'mainframe_context') new_context = 'subframe_context'; // below backup original offset
-original_frame_step_offset_x = frame_step_offset_x; original_frame_step_offset_y = frame_step_offset_y;
-casper.then(function _step() { // track frame (x,y) offset so that steps within frame work correctly
-var frame_rect = chrome.getRect(xps666('(//frame|//iframe)[@name="'+frameInfo+'" or @id="'+frameInfo+'"]'));
-frame_step_offset_x = frame_rect.left; frame_step_offset_y = frame_rect.top; // set offset before entering frame
-chrome_step('Runtime.evaluate',{expression: new_context+' = document.evaluate(\'(//frame|//iframe)[@name="'+frameInfo+'" or @id="'+frameInfo+'"]\','+chrome_context+',null,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null).snapshotItem(0).contentDocument'}); chrome_context = new_context;}); // set mainframe_context/subframe_context in dom
-casper.then(then); casper.then(function _step() {if (chrome_context == 'subframe_context') {
-chrome_step('Runtime.evaluate',{expression: 'subframe_context = null'}); chrome_context = 'mainframe_context';
-frame_step_offset_x = original_frame_step_offset_x; frame_step_offset_y = original_frame_step_offset_y;}
-else if (chrome_context == 'mainframe_context') {chrome_step('Runtime.evaluate',{expression: 'mainframe_context = null'});
-chrome_context = 'document'; frame_step_offset_x = 0; frame_step_offset_y = 0;}});}; // reset offset after exit mainframe
+else if (chrome_context == 'mainframe_context') new_context = 'subframe_context';
+casper.then(function _step() {chrome_step('Runtime.evaluate',{expression: new_context+' = document.evaluate(\'(//frame|//iframe)[@name="'+frameInfo+'" or @id="'+frameInfo+'"]\','+chrome_context+',null,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null).snapshotItem(0).contentDocument'}); chrome_context = new_context;}); // set mainframe_context/subframe_context in dom
+casper.then(then); casper.then(function _step() {if (chrome_context == 'subframe_context') {chrome_step('Runtime.evaluate',{expression: 'subframe_context = null'}); chrome_context = 'mainframe_context';} else if (chrome_context == 'mainframe_context') {chrome_step('Runtime.evaluate',{expression: 'mainframe_context = null'}); chrome_context = 'document';}});};
 
 chrome.waitForPopup = function(popupInfo,then,onTimeout) { // replace casperjs waitforpopup for checking popup window
 casper.waitFor(function check() { // use similar logic as chrome withpopup to scan through list of browser targets
@@ -774,13 +726,11 @@ case 'code': return code_intent(live_line); break;
 default: return "this.echo('ERROR - cannot understand step " + live_line.replace(/'/g,'\\\'') + "')";}}
 
 function parse_variables(script_line) { // `variable` --> '+variable+'
-// use "[SINGLE_QUOTE_FOR_VARIABLE_HANDLING]" instead of "'" to prevent escaping ' in escape_bs()
-quote_token = "[SINGLE_QUOTE_FOR_VARIABLE_HANDLING]+"; // token to alternate replacements for '+variable+'
+quote_token = "'+"; // token to alternate replacements for '+variable+'
 for (char_counter = 0; char_counter < script_line.length; char_counter++) {
 if (script_line.charAt(char_counter) == "`") {
 script_line = script_line.substr(0,char_counter) + quote_token + script_line.substr(char_counter+1);
-if (quote_token == "[SINGLE_QUOTE_FOR_VARIABLE_HANDLING]+") quote_token = "+[SINGLE_QUOTE_FOR_VARIABLE_HANDLING]";
-else quote_token = "[SINGLE_QUOTE_FOR_VARIABLE_HANDLING]+";}} return script_line;}
+if (quote_token == "'+") quote_token = "+'"; else quote_token = "'+";}} return script_line;}
 
 // for live mode understanding intent of line entered
 function get_intent(raw_intent) {var lc_raw_intent = raw_intent.toLowerCase();
@@ -916,15 +866,12 @@ source_string = source_string.replace(/\+\+\+\+\+/g,'+'); source_string = source
 source_string = source_string.replace(/\+\+\+/g,'+'); source_string = source_string.replace(/\+\+/g,'+');
 return source_string;} // replacing multiple variations of + to handle user typos of double spaces etc
 
-function escape_bs(input_string) { // helper function to escape backslash characters and friends
-escaped_string = input_string.replace(/\\/g,'\\\\').replace(/\'/g,'\\\'').replace(/\n/g,'\\n').replace(/\r/g,'\\r');
-escaped_string = escaped_string.replace(/\t/g,'\\t').replace(/\f/g,'\\f').replace(/\v/g,'\\v').replace(/\"/g,'\\\"');
-return escaped_string.replace(/\[SINGLE_QUOTE_FOR_VARIABLE_HANDLING\]/g,'\'');}
+function escape_bs(input_string) { // helper function to escape backslash characters
+return input_string.replace(/\\/g,'\\\\');}
 
 function is_coordinates(input_params) { // helper function to check if string is (x,y) coordinates
 if ((input_params.length > 4) && (input_params.substr(0,1) == '(') && (input_params.substr(-1) == ')') 
-&& (input_params.split(',').length == 2 || input_params.split(',').length == 3) 
-&& (!input_params.match(/[a-z]/i))) return true; else return false;}
+&& (input_params.split(',').length == 2) && (!input_params.match(/[a-z]/i))) return true; else return false;}
 
 function is_sikuli(input_params) { // helper function to check if input is meant for sikuli visual automation
 if (input_params.length > 4 && input_params.substr(-4).toLowerCase() == '.png') return true; // support png and bmp
@@ -1228,7 +1175,7 @@ else return call_sikuli(raw_intent.replace(/\\/g,'\\\\').replace(/'/g,'\\\''),'f
 function timeout_intent(raw_intent) {raw_intent = eval("'" + escape_bs(raw_intent) + "'"); // support dynamic variables
 var params = ((raw_intent + ' ').substr(1+(raw_intent + ' ').indexOf(' '))).trim();
 if (params == '') return "this.echo('ERROR - time in seconds missing for " + raw_intent + "')";
-else return check_chrome_context("casper.options.waitTimeout = " + (parseFloat(params)*1000).toString() + "; sikuli_timeout(" + parseFloat(params).toString() + ");");}
+else return check_chrome_context("casper.options.waitTimeout = " + (parseFloat(params)*1000).toString() + ";");}
 
 function code_intent(raw_intent) { // code to support dynamic variables not applicable
 return check_chrome_context(raw_intent);}
@@ -1275,7 +1222,7 @@ if ((selector.indexOf('/') == 0) || (selector.indexOf('(') == 0)) var select = _
 else var select = document.querySelector(selector); // auto-select xpath or query css method to get element
 if (valueToMatch == '[clear]') valueToMatch = ''; // [clear] keyword to allow selecting empty / blank option
 Array.prototype.forEach.call(select.children, function(opt, i) { // loop through list to select option
-if (!found && opt.value == valueToMatch) {select.selectedIndex = i; found = true;}});
+if (!found && opt.value.indexOf(valueToMatch) !== -1) {select.selectedIndex = i; found = true;}});
 var evt = document.createEvent("UIEvents"); // dispatch change event in case there is validation
 evt.initUIEvent("change", true, true); select.dispatchEvent(evt);}, selector, valueToMatch);};
 

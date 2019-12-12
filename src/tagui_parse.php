@@ -2,12 +2,6 @@
 
 /* PARSER SCRIPT FOR TAGUI FRAMEWORK ~ TEBEL.ORG */
 
-// Q1. Why is formatting for this file so messed up? - it's created on the road
-// If you want to know more - https://github.com/kelaberetiv/TagUI/issues/490
-
-// Q2. Is there a beautified version for easier viewing or editing? - yes snapshot below
-// https://github.com/kelaberetiv/TagUI/blob/master/src/media/snapshots/tagui_parse.md
-
 // check flow filename for .tagui or .js or .txt or no extension
 $script = $argv[1]; if ($script=="") die("ERROR - specify flow filename as first parameter\n");
 if (strpos(pathinfo($script, PATHINFO_BASENAME), '.') !== false) // check if file has extension
@@ -25,28 +19,28 @@ $footer_file = fopen('tagui_footer.js','r') or die("ERROR - cannot open tagui_fo
 $repo_count = 0; if (file_exists(getenv('custom_csv_file'))) { // load datatable or legacy datatable / repository
 $repo_file = fopen(getenv('custom_csv_file'),'r') or die("ERROR - cannot open " . getenv('custom_csv_file') . "\n");
 while (!feof($repo_file)) {$repo_data[$repo_count] = fgetcsv($repo_file);
-if (@count($repo_data[$repo_count]) == 0) die("ERROR - empty row found in " . getenv('custom_csv_file') . "\n");
+if (count($repo_data[$repo_count]) == 0) die("ERROR - empty row found in " . getenv('custom_csv_file') . "\n");
 $repo_count++;} fclose($repo_file); $repo_count-=1; //-1 for header, for EOF need to check flexibly using below line
-if (@count($repo_data[$repo_count]) == 1) $repo_count-=1;} //-1 for EOF (Windows files don't end with newline character)
+if (count($repo_data[$repo_count]) == 1) $repo_count-=1;} //-1 for EOF (Windows files don't end with newline character)
 
 $local_repo_location = str_replace("\\","/",dirname($script)) . '/tagui_local.csv';
 if (file_exists($local_repo_location)) { // load local repository file if it exists for objects and keywords
 $local_repo_file = fopen($local_repo_location,'r') or die("ERROR - cannot open " . 'tagui_local.csv' . "\n");
 if ($repo_count != 0) $repo_count++; fgetcsv($local_repo_file); // +1 if array has data, discard header record
 while (!feof($local_repo_file)) {$repo_data[$repo_count] = fgetcsv($local_repo_file);
-if (@count($repo_data[$repo_count]) == 0) die("ERROR - empty row found in " . 'tagui_local.csv' . "\n");
-if (@count($repo_data[$repo_count]) != 1) // pad the empty columns when local repository is used with datatable
-{$repo_data[$repo_count] = array_pad($repo_data[$repo_count], @count($repo_data[0]), $repo_data[$repo_count][1]);}
-$repo_count++;} fclose($local_repo_file); $repo_count-=1; if (@count($repo_data[$repo_count]) == 1) $repo_count-=1;}
+if (count($repo_data[$repo_count]) == 0) die("ERROR - empty row found in " . 'tagui_local.csv' . "\n");
+if (count($repo_data[$repo_count]) != 1) // pad the empty columns when local repository is used with datatable
+{$repo_data[$repo_count] = array_pad($repo_data[$repo_count], count($repo_data[0]), $repo_data[$repo_count][1]);}
+$repo_count++;} fclose($local_repo_file); $repo_count-=1; if (count($repo_data[$repo_count]) == 1) $repo_count-=1;}
 
 if (file_exists('tagui_global.csv')) { // load global repository file if it exists for objects and keywords
 $global_repo_file = fopen('tagui_global.csv','r') or die("ERROR - cannot open " . 'tagui_global.csv' . "\n");
 if ($repo_count != 0) $repo_count++; fgetcsv($global_repo_file); // +1 if array has data, discard header record
 while (!feof($global_repo_file)) {$repo_data[$repo_count] = fgetcsv($global_repo_file);
-if (@count($repo_data[$repo_count]) == 0) die("ERROR - empty row found in " . 'tagui_global.csv' . "\n");
-if (@count($repo_data[$repo_count]) != 1) // pad the empty columns when global repository is used with datatable
-{$repo_data[$repo_count] = array_pad($repo_data[$repo_count], @count($repo_data[0]), $repo_data[$repo_count][1]);}
-$repo_count++;} fclose($global_repo_file); $repo_count-=1; if (@count($repo_data[$repo_count]) == 1) $repo_count-=1;}
+if (count($repo_data[$repo_count]) == 0) die("ERROR - empty row found in " . 'tagui_global.csv' . "\n");
+if (count($repo_data[$repo_count]) != 1) // pad the empty columns when global repository is used with datatable
+{$repo_data[$repo_count] = array_pad($repo_data[$repo_count], count($repo_data[0]), $repo_data[$repo_count][1]);}
+$repo_count++;} fclose($global_repo_file); $repo_count-=1; if (count($repo_data[$repo_count]) == 1) $repo_count-=1;}
 
 $tagui_web_browser = "this"; // set the web browser to be used base on tagui_web_browser environment variable
 if ((getenv('tagui_web_browser')=='headless') or (getenv('tagui_web_browser')=='chrome')) $tagui_web_browser = 'chrome';
@@ -258,8 +252,8 @@ file_put_contents($script . '.js',$script_content); // below initialise chrome i
 if (!touch('tagui_chrome.in')) die("ERROR - cannot initialise tagui_chrome.in\n");
 if (!touch('tagui_chrome.out')) die("ERROR - cannot initialise tagui_chrome.out\n");}
 
-// if clipboard(), mouse_xy(), mouse_x(), mouse_y() helper functions are used, invoke sikuli visual automation
-if ((strpos($script_content,'clipboard(')!==false) or (strpos($script_content,'mouse_xy()')!==false) or 
+// if mouse_xy(), mouse_x(), mouse_y() helper functions are used, invoke sikuli visual automation
+if ((strpos($script_content,'mouse_xy()')!==false) or 
 (strpos($script_content,'mouse_x()')!==false) or (strpos($script_content,'mouse_y()')!==false)) {
 if (!touch('tagui.sikuli/tagui_sikuli.in')) die("ERROR - cannot initialise tagui_sikuli.in\n");
 if (!touch('tagui.sikuli/tagui_sikuli.out')) die("ERROR - cannot initialise tagui_sikuli.out\n");}
@@ -567,8 +561,7 @@ return $source_string;} // replacing multiple variations of + to handle user typ
 
 function is_coordinates($input_params) { // helper function to check if string is (x,y) coordinates
 if (strlen($input_params)>4 and substr($input_params,0,1)=='(' and substr($input_params,-1)==')' 
-and (substr_count($input_params,',')==1 or substr_count($input_params,',')==2) 
-and ((strpos($input_params,"'+")!==false and strpos($input_params,"+'")!==false) 
+and substr_count($input_params,',')==1 and ((strpos($input_params,"'+")!==false and strpos($input_params,"+'")!==false) 
 or !preg_match('/[a-zA-Z]/',$input_params))) return true; else return false;}
 
 function is_sikuli($input_params) { // helper function to check if input is meant for sikuli visual automation
@@ -864,10 +857,6 @@ else if (strtolower($params) == "down") return "casper.then(function() {".call_s
 else if (strtolower($params) == "up") return "casper.then(function() {".call_sikuli($raw_intent,"up");
 else echo "ERROR - " . current_line() . " cannot understand step " . $raw_intent . "\n";}
 
-// helper function as check_intent() adds an if block that immediately closes without going through closure handling
-function check_intent_clear_injected_if_block() {$last_delimiter_pos = strrpos($GLOBALS['code_block_tracker'],"|");
-$GLOBALS['code_block_tracker']=substr($GLOBALS['code_block_tracker'],0,$last_delimiter_pos); return "";}
-
 function check_intent($raw_intent) {
 $params = trim(substr($raw_intent." ",1+strpos($raw_intent." "," ")));
 $params = str_replace("||"," JAVASCRIPT_OR ",$params); // to handle conflict with "|" delimiter 
@@ -878,10 +867,8 @@ $param2 = str_replace(" JAVASCRIPT_OR ","||",$param2); $param3 = str_replace(" J
 if (substr_count($params,"|")!=2) 
 echo "ERROR - " . current_line() . " if/true/false missing for " . $raw_intent . "\n";
 else if (getenv('tagui_test_mode') == 'true') return "casper.then(function() {"."{".parse_condition("if ".$param1).
-"\ntest.assert(true,".add_concat($param2).");\nelse test.assert(false,".add_concat($param3).");}".
-check_intent_clear_injected_if_block().end_fi()."});"."\n\n";
-else return "casper.then(function() {"."{".parse_condition("if ".$param1)."\nthis.echo(".add_concat($param2).
-");\nelse this.echo(".add_concat($param3).");}".check_intent_clear_injected_if_block().end_fi()."});"."\n\n";}
+"\ntest.assert(true,".add_concat($param2).");\nelse test.assert(false,".add_concat($param3).");}".end_fi()."});"."\n\n";
+else return "casper.then(function() {"."{".parse_condition("if ".$param1)."\nthis.echo(".add_concat($param2).");\nelse this.echo(".add_concat($param3).");}".end_fi()."});"."\n\n";}
 
 function test_intent($raw_intent) {
 echo "ERROR - " . current_line() . " use CasperJS tester module to professionally " . $raw_intent . "\n";
@@ -971,8 +958,7 @@ return "casper.then(function() {".call_sikuli($safe_intent,'for vision step');} 
 function timeout_intent($raw_intent) {
 $params = trim(substr($raw_intent." ",1+strpos($raw_intent." "," ")));
 if ($params == "") echo "ERROR - " . current_line() . " time in seconds missing for " . $raw_intent . "\n";
-else return "casper.then(function() {"."casper.options.waitTimeout = " . (floatval($params)*1000) . 
-"; sikuli_timeout(" . floatval($params) . ");" . end_fi()."});"."\n\n";}
+else return "casper.then(function() {"."casper.options.waitTimeout = " . (floatval($params)*1000) . ";" . end_fi()."});"."\n\n";}
 
 function code_intent($raw_intent) {
 $params = parse_condition($raw_intent);
@@ -1087,7 +1073,7 @@ $logic = str_replace("   "," ",$logic); $logic = str_replace("  "," ",$logic); /
 $token = explode(" ",$logic); // split into tokens for loop in natural language, eg - for cupcake from 1 to 4
 if (strpos($raw_logic,"{")!==false) // show error to put { to  next line for parsing as { step
 echo "ERROR - " . current_line() . " put { to next line - " . $raw_logic . "\n";
-else if (@count($token) != 6) echo "ERROR - " . current_line() . " invalid for loop - " . $raw_logic . "\n";
+else if (count($token) != 6) echo "ERROR - " . current_line() . " invalid for loop - " . $raw_logic . "\n";
 else $logic = $token[0]." (".$token[1]."=".$token[3]."; ".$token[1]."<=".$token[5]."; ".$token[1]."++)";}
 else if ((substr($logic,0,4)=="for ") and (strpos($raw_logic,"{")!==false))
 echo "ERROR - " . current_line() . " put { to next line - " . $raw_logic . "\n";

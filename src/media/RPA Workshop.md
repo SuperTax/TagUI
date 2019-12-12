@@ -1,11 +1,11 @@
 
-*TagUI is a command-line tool for digital process automation. This branch of automation is commercially known as RPA (robotic process automation). RPA aims to reproduce user interactions with computer applications, for example mouse clicks and keyboard entries. For more info and documentation, refer to [TagUI home page](https://github.com/kelaberetiv/TagUI).*
+**TagUI is a command-line tool for digital process automation. This branch of automation is commercially known as RPA (robotic process automation), and aims to reproduce user interactions with computer applications - for example mouse clicks and keyboard entries. For more info and documentation, visit TagUI [repository page](https://github.com/kelaberetiv/TagUI).**
 
 # [Setup](https://github.com/kelaberetiv/TagUI#set-up)
 *In this section, we'll download and install TagUI on your computer - it works on Windows, macOS, Linux.*
 
 - TagUI is easy to use right away, in most environments all dependencies are packaged in
-- To use [visual automation](https://github.com/kelaberetiv/TagUI#visual-automation) on desktop or browser, be sure to have OpenJDK v8 (64-bit) or later
+- To use [visual automation](https://github.com/kelaberetiv/TagUI#visual-automation) on desktop or browser, be sure to have Java v8 or greater installed
 
 Platform|macOS|Linux|Windows|Node.js (macOS/Linux)
 :------:|:---:|:---:|:-----:|:-------------------:
@@ -59,20 +59,18 @@ cd /home/your_id/tagui/src
 > if the script works successfully, you will notice five .png files - congratulations, you have run your first TagUI script!
 
 **Troubleshooting potential exceptions**
-- For Windows computers, if you see 'MSVCR110.dll is missing' error, install [this from Microsoft website](https://www.microsoft.com/en-us/download/details.aspx?id=30679) (choose vcredist_x86.exe) - this file is required to run the Windows PHP engine packaged with TagUI. Some IT policies restrict TagUI from writing to c:\tagui and working properly, in that case please unzip to user desktop folder.
-- For some newer macOS versions, if you get a 'dyld: Library not loaded' error, [install OpenSSL in this way](https://github.com/kelaberetiv/TagUI/issues/86#issuecomment-372045221). macOS Catalina update has introduced tighter security controls, see solutions for the [PhantomJS](https://github.com/kelaberetiv/TagUI/issues/601) and [Java popups](https://github.com/kelaberetiv/TagUI/issues/598).
+- For Windows computers, if you see 'MSVCR110.dll is missing' error, install [this from Microsoft website](https://www.microsoft.com/en-us/download/details.aspx?id=30679) (choose vcredist_x86.exe) - this file is required to run the Windows PHP engine packaged with TagUI.
+- For some newer macOS versions, if you get a 'dyld: Library not loaded' error, [install OpenSSL in this way](https://github.com/kelaberetiv/TagUI/issues/86#issuecomment-372045221).
 - For some flavours of Linux (Ubuntu for example), which do not have PHP pre-installed, google how to install PHP accordingly (eg Ubuntu, apt-get install php). Most Linux distributions would already come with PHP.
 - For Firefox automation, download an [older version here](https://ftp.mozilla.org/pub/firefox/releases/59.0/) (SlimerJS doesn't work with Firefox v60 onwards).
   
 Now, you can try the same automation script with Chrome browser by running with chrome option (for Windows enter `tagui samples\1_yahoo chrome`, for macOS/Linux enter `./tagui samples/1_yahoo chrome`). The automation will now run in the foreground instead, so you'll be able to see the navigation on Yahoo and DuckDuckGo websites.
 
->Make sure TagUI's Chrome browser is set to 100% zoom - as TagUI mimics the user mouse-clicks at the (x,y) coordinates of web elements, using a different zoom level will cause clicks to be triggered at wrong locations
-
 TagUI can also be run from desktop icons, scheduled tasks, or REST API calls.
 
 <details>
   <summary>
-    Click to show the command line options for TagUI tool and their purposes (eg chrome, headless, report)
+    Click to show the command line options for TagUI tool and their purposes
   </summary>
   
   Option|Purpose
@@ -94,7 +92,7 @@ TagUI can also be run from desktop icons, scheduled tasks, or REST API calls.
 
 <details>
   <summary>
-    Click to show info on automation logs (.log, .js, .raw), and how to run tagui from any directory
+    Click to show info on automation logs, and how to run tagui from any directory
   </summary>
 
   After each automation run, a .log file will be created to store output of the execution, a .js file is the generated JavaScript file, a .raw is the expanded flow after reading in any module sub-scripts that are called in that flow. These files are for user reference purpose and can be helpful in debugging or troubleshooting the automation flow. To turn off creation of these files, put an empty file tagui_no_logging in tagui/src folder.
@@ -134,7 +132,12 @@ To schedule an automation flow with crontab (macOS/Linux), for example at 8am da
 0 8 * * * /full_path_on_your_server/tagui flow_filename option(s)
 ```
 
-For Windows, use Task Scheduler (search schedule from Start Menu) or [Z-Cron freeware](https://www.z-cron.com)
+**Tip** - for Windows, use Task Scheduler (search schedule from Start Menu) or [Z-Cron freeware](https://www.z-cron.com)
+
+### TAGUI WRITER, SCREENSHOTER & EDITOR
+TagUI Writer is a Windows app created by Arnaud Degardin / [@adegard](https://github.com/adegard) which makes it easy to write TagUI scripts. By pressing Ctrl + Left-click, a popup menu will appear with the list of TagUI steps for you to paste into your text editor. Arnaud also created a ScreenShoter app which makes it easy to capture snapshots for TagUI visual automation. Lastly, TagUI Editor allows you to edit and run TagUI scripts via AutoHotKey. To download, [click here](https://github.com/adegard/tagui_scripts).
+
+![TagUI Editor](https://raw.githubusercontent.com/adegard/tagui_scripts/master/TagUI_Editor.gif)
 
 ### CHROME EXTENSION
 Download from [Chrome Web Store](https://chrome.google.com/webstore/detail/tagui-web-automation/egdllmehgfgjebhlkjmcnhiocfcidnjk/) to use TagUI Chrome web browser extension for recording automation flows. TagUI Chrome extension records steps such as page navigation, clicking web elements and entering information. 
@@ -150,7 +153,7 @@ Download from [Chrome Web Store](https://chrome.google.com/webstore/detail/tagui
 The recording isn't foolproof (for example, the underlying recording engine cannot capture frames, popup windows or tab key input). It's meant to simplify flow creation with some edits, instead of typing everything manually. [See this video](https://www.youtube.com/watch?v=bFvsc4a8hWQ) for an example of recording a sequence of steps, editing for adjustments and playing back the automation.
 
 # [Using it (advanced)](https://github.com/kelaberetiv/TagUI#cheat-sheet)
-*In this section, we'll explore TagUI core features, such as Chrome browser automation, visual automation & OCR.*
+*In this section, we'll spend some time exploring core features of TagUI.*
 
 ### FIND XPATH OF WEB ELEMENT
 - In Chrome browser, right-click on the element, click Inspect, right-click on HTML code block, then
@@ -190,7 +193,7 @@ live|try steps or code interactively for Chrome / visual automation|enter live m
 
 <details>
   <summary>
-    Click to show pro steps - tagui, keyboard, mouse, table, wait, check, upload, api, run, dom, js, r, py, vision, timeout
+    Click to show pro steps such as tagui, keyboard, mouse, table, wait, check, api, run, dom, js, r, py, vision, code blocks
   </summary>
 
   Pro Step|Parameters (separator in bold)|Purpose
@@ -241,30 +244,23 @@ live|try steps or code interactively for Chrome / visual automation|enter live m
 </details>
 
 ###  VISUAL AUTOMATION
-TagUI has built-in integration with [SikuliX (base on OpenCV)](http://sikulix.com) to allow visually identifying the web elements and desktop UI (user interface) elements for interaction by providing their images or (x,y) coordinates. Applicable steps are click, hover, type, select, read, show, save, snap, keyboard, mouse. To use visual automation, OpenJDK v8 (64-bit) or later is needed.
+TagUI has built-in integration with [SikuliX (base on OpenCV)](http://sikulix.com) to allow visually identifying the web elements and desktop UI (user interface) elements for interaction by providing their images or (x,y) coordinates. Applicable steps are click, hover, type, select, read, show, save, snap, keyboard, mouse. To use visual automation, Java v8 or greater is required.
 
-1. Check that [OpenJDK (64-bit)](https://aws.amazon.com/corretto) is installed (entering `java -version` returns your Java version)
+1. Check that [Java JDK](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) is installed (entering `java -version` returns your Java version)
 2. After Java is installed, you will have to restart your command prompt or terminal to use it
 3. On Windows, set display magnification to recommended %, if it doesn't work then 100%
 4. On Windows, if TagUI just hangs there, see if it's due to [this issue and try the solution](https://github.com/kelaberetiv/TagUI/issues/229)
 5. On macOS, if can't find image on screen, may be due to [how the image was captured](https://github.com/kelaberetiv/TagUI/issues/240#issuecomment-405030276)
 6. On Linux, requires installing and setting up dependencies by following [this guide](https://sikulix-2014.readthedocs.io/en/latest/newslinux.html#version-1-1-4-special-for-linux-people)
 
-**Tip** - the first time visual automation is run, the SikuliX engine may need to initialise Jython. Run again to use.
+To use visual automation, simply specify an image (in .png or .bmp format) to visually look for in place of the element identifier. Alternatively, you can specify the (x,y) coordinates of the element that you want to interact with.
+> Important! The element that corresponds to the image must be visible on the screen for visual automation to succeed. If it's blocked by another window for example, the automation will be unable to find the element. 
 
-To use visual automation, simply specify an image (in .png or .bmp format) to visually look for in place of the element identifier. Relative paths are supported for image filenames (eg pc.png, images/button.bmp). Alternatively, you can specify the (x,y) coordinates of the element that you want to interact with.
-
->Important note - the element that corresponds to the image must be visible on the screen for visual automation to succeed. If it's blocked by another window for example, the automation will be unable to find the element.
-
-![Sample Visual Automation](https://raw.githubusercontent.com/tebelorg/Tump/master/visual_flow.gif)
-
-To type onto the screen instead of a particular element, use `keyboard text` or `keyboard [modifiers]text` ([examples](https://github.com/kelaberetiv/TagUI/issues/370)). To do a snapshot or an OCR of the whole screen, use `page.png` or `page.bmp` as the element identifier for steps snap / read. The usual helper functions visible() / present() can also be used to check whether an image is visible on the screen.
-
->Transparency (0% opacity) is supported in .png images, for eg using an image of an UI element with transparent background to enable clicking on an UI element that appears on different backgrounds on different occasions.
->
->Another example is an image of the window or frame (PDF viewer, MS Word, textbox etc) with the center content of the image set as transparent. This allows using read, show, save, snap steps to perform OCR and save snapshots for application windows, containers, frames, textboxes with varying content.
+To type onto the screen instead of a particular element, use `keyboard text` or `keyboard [modifiers]text` ([examples](https://github.com/kelaberetiv/TagUI/issues/370)). To do a snapshot or an OCR of the whole screen, use `page.png` or `page.bmp` as the element identifier for steps snap / read. Relative paths are supported for image filenames (eg pc.png, images/button.bmp). The usual helper functions visible() / present() can also be used to check whether an image is visible on the screen.
 
 The keyboard and mouse steps, as well as helper functions mouse_xy(), mouse_x(), mouse_y(), can be used to do complex UI interactions. A screen (real or Xvfb) is needed for visual automation. [Tesseract OCR](https://github.com/tesseract-ocr/tesseract) (optical character recognition) is used for visually retrieving text. Also, by using vision step, you can send [custom SikuliX commands](http://sikulix-2014.readthedocs.io/en/latest/genindex.html) to do things that are not covered by TagUI.
 
+![Sample Visual Automation](https://raw.githubusercontent.com/tebelorg/Tump/master/visual_flow.gif)
+
 # [Further Resources](https://github.com/kelaberetiv/TagUI)
-*For more info and documentation on TagUI, visit its [home page](https://github.com/kelaberetiv/TagUI).*
+*For more info and documentation on TagUI, visit its [repository page](https://github.com/kelaberetiv/TagUI).*
