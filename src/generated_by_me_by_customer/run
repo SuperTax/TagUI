@@ -1,0 +1,365 @@
+https://ewaybillgst.gov.in/login.aspx
+
+wait 2.00 seconds
+// use timer() as a stopwatch to track elapsed time between calls
+start = timer()
+errorMessage = ""
+if p1
+{
+    echo "Username :"+ p1
+}
+else
+{
+    errorMessage += "Username not define"
+}
+if p2
+{
+    echo "Password :"+ p2
+}
+else
+{
+    errorMessage += ", Password not define"
+}
+if p3
+{
+    echo "Start Date :"+p3
+}
+else
+{
+    errorMessage += ", Start date not define"
+}
+if p4
+{
+    echo "End Date :"+p4
+}
+else
+{
+    errorMessage += ", End date not define"
+}
+if p5
+{
+    echo "Date Group :"+p5
+}
+else
+{
+    echo "Date Group(Default): 5"
+}
+if errorMessage equals to ""
+{
+    echo "Getting data successfully"
+    // Logout user
+    if present('lnk_Signout')
+    {
+            click lnk_Signout
+            wait 3.00 seconds
+    }
+    // If check Login Page
+    if present('btnLogin')
+    {
+        echo "login page is load successfully."
+        wait 3.00 seconds
+
+        // If check Login Page
+        // read /html/body/form/div[3]/div[2]/div/div/div[1]/h4 to pege_title
+        // check pege_title equals to "e - Way Bill System Login" | "Login" | ""
+        // if pege_title equals to "e - Way Bill System Login"
+        // echo "Login page. Title :" pege_title
+
+        // check that the page title has (E-WayBill System) in it (\' can be used to escape the single quote)
+        //check title() contains 'E-WayBill System' | 'title contains \'E-WayBill System\'' | 'title does not contain \'E-WayBill System\''
+
+        if p5
+        {
+            tempDayGroup = p5
+        }
+        else
+        {
+            tempDayGroup = 5
+        }
+
+        js begin
+        function getNumber(str) {
+            return parseInt(str.toString());
+        }
+        convertedDayGroup = getNumber(tempDayGroup);
+        function convertDate(convert_date) {
+            var convertDateParts = convert_date.split("/");
+            var convertedDate = convertDateParts[1]+"/"+convertDateParts[0]+"/"+convertDateParts[2];
+            return convertedDate.toString();
+        }
+        convertedStartDate = convertDate(p3);
+        convertedEndDate = convertDate(p4);
+        js finish
+
+        // Set username and password
+        username = p1
+        password = p2
+        start_date = convertedStartDate
+        end_date = convertedEndDate
+        day_group = convertedDayGroup
+
+        // Print variables
+        echo "Username = " + username
+        echo "Password = " + password
+        echo "Start Date = " + start_date
+        echo "End Date = " + end_date
+        echo "Day Group = " + day_group
+
+
+        // Set username
+        check present('//*[@id="txt_username"]') | 'Username filed exists' | 'Username filed does not exist'
+        click txt_username
+        enter txt_username as '+username+'
+
+        // Set password
+        check present('//*[@id="txt_password"]') | 'Password filed exists' | 'Password filed does not exist'
+        click txt_password
+        enter txt_password as '+password+'
+
+        click txtCaptcha
+        wait 15.00 seconds
+
+        // Click Login Button
+        click //*[@id="btnLogin"]
+
+        wait 5.00 seconds
+
+        if present('masterheaderhide1')
+        {
+
+            CUSTOMER_FILES = ''
+            CUSTOMER_DOWNLOAD_FOLDER = ''
+            CUSTOMER_DOWNLOAD_PATH = ''
+            ZIP_PATH = ''
+            js begin
+            // Customer folder current date and time
+            function getFolderName(customerFolder){
+                var newFolder = '';
+                var d = new Date();
+                var timestamp = d.getDate()+''+d.getMonth()+''+d.getFullYear()+""+d.getHours()+''+d.getMinutes()+''+d.getSeconds();
+                for(var i=0;i<customerFolder.length;i++){
+                    var char = customerFolder[i].toString();
+                    if(customerFolder[i].toString() == "/"){
+                        char = "-";
+                    }
+                    newFolder += char.toString();
+                }
+                return newFolder+"-"+timestamp;
+            }
+            var fs = require('fs');
+            var downloadMainFolder = fs.absolute("../downloads")
+            if (!fs.exists(downloadMainFolder)){
+                fs.makeDirectory(downloadMainFolder);
+            }
+            var path = fs.absolute("generated_by_me_by_customer/");
+            var downloadPath = fs.absolute("../downloads/generated_by_me")
+            if (!fs.exists(downloadPath)){
+                if(fs.makeDirectory(downloadPath)){
+                    console.log("Create Directory :"+downloadPath);
+                }
+                else{
+                    console.log("Not Create Directory :"+downloadPath);
+                }
+            }
+            downloadPath = downloadPath + "/";
+            var customerFolder = getFolderName(p1);
+            var customerDownloadFolder = downloadPath+""+customerFolder;
+            var zip_path = fs.absolute("../downloads/generated_by_me");
+            zip_path = zip_path+"/"+customerFolder+".zip";
+            if (!fs.exists(customerDownloadFolder)){
+                if(fs.makeDirectory(customerDownloadFolder)){
+                    console.log("Customer download folder created. Path :"+downloadPath+""+customerFolder);
+                }
+                else{
+                    console.log("Customer download folder was not created.");
+                }
+            }
+            else{
+                console.log("Customer download folder was not created.");
+            }
+            CUSTOMER_FILES = path
+            CUSTOMER_DOWNLOAD_FOLDER = customerFolder
+            CUSTOMER_DOWNLOAD_PATH = downloadPath+""+customerFolder
+            js finish
+
+            // Page : Generate By Me (Outward Supplies)
+            https://ewaybillgst.gov.in/Reports/CommomReport.aspx?id=3
+            echo "Redirect Page -> Generate By Others"
+            wait 5.00 seconds
+
+            // Select All Drop Down
+            click ctl00_ContentPlaceHolder1_ddlUserId
+            for n from 1 to 30
+            {
+                vision type(Key.DOWN)
+            }
+            vision type(Key.ENTER)
+            wait 2.00 seconds
+
+            js begin
+            function dateGroup(tempStartDate,tempEndDate,days,action) {
+
+                var temp_start_date = new Date(tempStartDate.toString());
+                var temp_end_date = new Date(tempEndDate.toString());
+
+                var arrDate = [];
+                for (var d = temp_start_date; d <= temp_end_date; d.setDate(d.getDate() + days)) {
+                    var group_start_date = new Date(d);
+                    var tempDate = new Date(d);
+                    var group_end_date = new Date(tempDate.setDate(tempDate.getDate() + (days -1)));
+
+                    if(group_end_date > temp_end_date){
+                        group_end_date = temp_end_date;
+                    }
+                    var start_dd = group_start_date.getDate();
+                    var start_mm = group_start_date.getMonth() + 1; //January is 0!
+                    var start_yyyy = group_start_date.getFullYear();
+                    if (start_dd < 10) {
+                      start_dd = '0' + start_dd;
+                    }
+                    if (start_mm < 10) {
+                      start_mm = '0' + start_mm;
+                    }
+                    var end_dd = group_end_date.getDate();
+                    var end_mm = group_end_date.getMonth() + 1; //January is 0!
+                    var end_yyyy = group_end_date.getFullYear();
+                    if (end_dd < 10) {
+                      end_dd = '0' + end_dd;
+                    }
+                    if (end_mm < 10) {
+                      end_mm = '0' + end_mm;
+                    }
+                    var start_html = start_dd+'/'+start_mm+'/'+start_yyyy;
+                    var end_html = end_dd+'/'+end_mm+'/'+end_yyyy;
+
+                    if(action == "LENGTH"){
+                        arrDate.push(start_html.toString());
+                    }
+                    else{
+                        if(action == "START"){
+                            arrDate.push(start_html.toString());
+                        }
+                        if(action == "END"){
+                            arrDate.push(end_html.toString());
+                        }
+                    }
+                }
+                if(action == "LENGTH"){
+                    return arrDate.length;
+                }
+                else{
+                    if(arrDate.length > 0){
+                        return arrDate;
+                    }
+                    else{
+                        return false;
+                    }
+                }
+            }
+
+            // Get only From dates in array
+            var from_start_date = new Date(start_date);
+            var from_end_date = new Date(end_date);
+            fromDates = dateGroup(from_start_date,from_end_date,day_group,"START");
+
+            // Get only To dates in array
+            var to_start_date = new Date(start_date);
+            var to_end_date = new Date(end_date);
+            toDates = dateGroup(to_start_date,to_end_date,day_group,"END");
+
+            // Get count start and end dates group
+            var count_start_date = new Date(start_date);
+            var count_end_date = new Date(end_date);
+            dayGroups = dateGroup(count_start_date,count_end_date,day_group,"LENGTH");
+            js finish
+
+            for n from 1 to dayGroups
+            {
+                wait 1.00 seconds
+                echo "Start Date Group : From Date:"+fromDates[n-1]+" - To Date: "+toDates[n-1]
+
+                // Set From Date
+                click ctl00_ContentPlaceHolder1_txtDate
+                type ctl00_ContentPlaceHolder1_txtDate as [clear]
+                enter ctl00_ContentPlaceHolder1_txtDate as '+fromDates[n-1]+'
+                wait 1.00 seconds
+
+                // Set To Date
+                click ctl00_ContentPlaceHolder1_txtDate1
+                type ctl00_ContentPlaceHolder1_txtDate1 as [clear]
+                enter ctl00_ContentPlaceHolder1_txtDate1 as '+toDates[n-1]+'
+                wait 1.00 seconds
+
+                // Click Go Button
+                if present('ctl00_ContentPlaceHolder1_btn_submit')
+                {
+                    click //*[@id="ctl00_ContentPlaceHolder1_btn_submit"]
+                    wait 3.00 seconds
+                    vision type(Key.ENTER)
+                    wait 2.00 seconds
+                }
+
+                // If check Export To Excel button exists
+                if present('ctl00_ContentPlaceHolder1_List_genMe_btn_export_excel')
+                {
+                    wait 5.00 seconds
+                    // Click Export Button to download File
+                    click //*[@id="ctl00_ContentPlaceHolder1_List_genMe_btn_export_excel"]
+                    echo "Download File => File Download Successfully. FromDate:"+fromDates[n-1]+" - ToDate:"+toDates[n-1]
+                    wait 5.00 seconds
+
+                    js begin
+                    var d = new Date();
+                    var file_timestamp = d.getDate()+''+d.getHours()+''+d.getMinutes()+''+d.getSeconds();
+                    var fs = require('fs');
+                    fs.list(CUSTOMER_FILES).forEach(function(file) {
+                        var fileName = file;
+                        file = CUSTOMER_FILES + file;
+                        var splitFileName = fileName.split(".");
+                        if(splitFileName.length == 2 && fileName != "." && fileName != "run.js" && fileName != "run.log" && fileName != "run.raw"){
+                            if(splitFileName[1].toUpperCase() == "ZIP" || splitFileName[1].toUpperCase() == "XLS" || splitFileName[1].toUpperCase() == "XLSX"){
+                                var newFileName = splitFileName[0].toString()+'-'+file_timestamp+'.'+splitFileName[1].toString();
+                                var downloadPath = downloadPath + file;
+                                fs.move('generated_by_me_by_customer' + fs.separator + fileName,'..'+fs.separator+'downloads' + fs.separator + 'generated_by_me' + fs.separator  + '' + CUSTOMER_DOWNLOAD_FOLDER + '' + fs.separator + newFileName);
+                                console.log("Successfully move file in customer folder.");
+                            }
+                        }
+                    });
+                    js finish
+                }
+                else
+                {
+                    vision type(Key.ENTER)
+                    echo "Download File => File not download or record not found. FromDate:"+fromDates[n-1]+" - ToDate:"+toDates[n-1]
+                }
+            }
+            echo "Download Folder Path : "+CUSTOMER_DOWNLOAD_PATH
+        }
+        else
+        {
+            echo "Login failed. please try again!"
+        }
+    }
+    else
+    {
+        echo "Login page is not load successfully. please try again!"
+        //snap page
+    }
+    // Logout user
+    if present('ctl00_headercont_lnk_Signout')
+    {
+            click ctl00_headercont_lnk_Signout
+            wait 3.00 seconds
+    }
+}
+else
+{
+    echo "Error message : "+errorMessage
+}
+wait 3.00 seconds
+//zip -r zipfile.zip samples
+// use timer() as a stopwatch to track elapsed time between calls
+time_taken = timer()
+echo 'time taken - ' time_taken ' seconds'
+echo 'Script completed...'
+this.exit();

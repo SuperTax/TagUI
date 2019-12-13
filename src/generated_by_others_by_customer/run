@@ -1,4 +1,5 @@
 https://ewaybillgst.gov.in/login.aspx
+
 wait 2.00 seconds
 // use timer() as a stopwatch to track elapsed time between calls
 start = timer()
@@ -46,6 +47,12 @@ else
 if errorMessage equals to ""
 {
     echo "Getting data successfully"
+    // Logout user
+    if present('lnk_Signout')
+    {
+            click lnk_Signout
+            wait 3.00 seconds
+    }
     // If check Login Page
     if present('btnLogin')
     {
@@ -103,13 +110,11 @@ if errorMessage equals to ""
         check present('//*[@id="txt_username"]') | 'Username filed exists' | 'Username filed does not exist'
         click txt_username
         enter txt_username as '+username+'
-        wait 2.00 seconds
 
         // Set password
         check present('//*[@id="txt_password"]') | 'Password filed exists' | 'Password filed does not exist'
         click txt_password
         enter txt_password as '+password+'
-        wait 2.00 seconds
 
         click txtCaptcha
         wait 15.00 seconds
@@ -121,6 +126,62 @@ if errorMessage equals to ""
 
         if present('masterheaderhide1')
         {
+
+            CUSTOMER_FILES = ''
+            CUSTOMER_DOWNLOAD_FOLDER = ''
+            CUSTOMER_DOWNLOAD_PATH = ''
+            ZIP_PATH = ''
+            js begin
+            // Customer folder current date and time
+            function getFolderName(customerFolder){
+                var newFolder = '';
+                var d = new Date();
+                var timestamp = d.getDate()+''+d.getMonth()+''+d.getFullYear()+""+d.getHours()+''+d.getMinutes()+''+d.getSeconds();
+                for(var i=0;i<customerFolder.length;i++){
+                    var char = customerFolder[i].toString();
+                    if(customerFolder[i].toString() == "/"){
+                        char = "-";
+                    }
+                    newFolder += char.toString();
+                }
+                return newFolder+"-"+timestamp;
+            }
+            var fs = require('fs');
+            var downloadMainFolder = fs.absolute("../downloads")
+            if (!fs.exists(downloadMainFolder)){
+                fs.makeDirectory(downloadMainFolder);
+            }
+            var path = fs.absolute("generated_by_others_by_customer/");
+            var downloadPath = fs.absolute("../downloads/generated_by_others")
+            if (!fs.exists(downloadPath)){
+                if(fs.makeDirectory(downloadPath)){
+                    console.log("Create Directory :"+downloadPath);
+                }
+                else{
+                    console.log("Not Create Directory :"+downloadPath);
+                }
+            }
+            downloadPath = downloadPath + "/";
+            var customerFolder = getFolderName(p1);
+            var customerDownloadFolder = downloadPath+""+customerFolder;
+            var zip_path = fs.absolute("../downloads/generated_by_others");
+            zip_path = zip_path+"/"+customerFolder+".zip";
+            if (!fs.exists(customerDownloadFolder)){
+                if(fs.makeDirectory(customerDownloadFolder)){
+                    console.log("Customer download folder created. Path :"+downloadPath+""+customerFolder);
+                }
+                else{
+                    console.log("Customer download folder was not created.");
+                }
+            }
+            else{
+                console.log("Customer download folder was not created.");
+            }
+            CUSTOMER_FILES = path
+            CUSTOMER_DOWNLOAD_FOLDER = customerFolder
+            CUSTOMER_DOWNLOAD_PATH = downloadPath+""+customerFolder
+            js finish
+
             // Page : Generate By Others
             https://ewaybillgst.gov.in/Reports/CommomReport.aspx?id=2
             echo "Redirect Page -> Generate By Others"
@@ -203,12 +264,10 @@ if errorMessage equals to ""
             dayGroups = dateGroup(count_start_date,count_end_date,day_group,"LENGTH");
             js finish
 
-            echo "dayGroups : "+dayGroups
-
             for n from 1 to dayGroups
             {
-                wait 3.00 seconds
-                echo "Started Date Group : From Date:"+fromDates[n-1]+" - To Date: "+toDates[n-1]
+                wait 1.00 seconds
+                echo "Start Date Group : From Date:"+fromDates[n-1]+" - To Date: "+toDates[n-1]
 
                 // Set From Date
                 click ctl00_ContentPlaceHolder1_txtDate
@@ -226,16 +285,38 @@ if errorMessage equals to ""
                 if present('ctl00_ContentPlaceHolder1_btn_submit')
                 {
                     click //*[@id="ctl00_ContentPlaceHolder1_btn_submit"]
+                    wait 3.00 seconds
                     vision type(Key.ENTER)
-                    wait 5.00 seconds
+                    wait 2.00 seconds
                 }
 
                 // If check Export To Excel button exists
                 if present('ctl00_ContentPlaceHolder1_List_Oth_btn_export_excel_List_Oth')
                 {
+                    wait 2.00 seconds
                     // Click Export Button to download File
                     click //*[@id="ctl00_ContentPlaceHolder1_List_Oth_btn_export_excel_List_Oth"]
                     echo "Download File => File Download Successfully. FromDate:"+fromDates[n-1]+" - ToDate:"+toDates[n-1]
+                    wait 5.00 seconds
+
+                    js begin
+                    var d = new Date();
+                    var file_timestamp = d.getDate()+''+d.getHours()+''+d.getMinutes()+''+d.getSeconds();
+                    var fs = require('fs');
+                    fs.list(CUSTOMER_FILES).forEach(function(file) {
+                        var fileName = file;
+                        file = CUSTOMER_FILES + file;
+                        var splitFileName = fileName.split(".");
+                        if(splitFileName.length == 2 && fileName != "." && fileName != "run.js" && fileName != "run.log" && fileName != "run.raw"){
+                            if(splitFileName[1].toUpperCase() == "ZIP" || splitFileName[1].toUpperCase() == "XLS" || splitFileName[1].toUpperCase() == "XLSX"){
+                                var newFileName = splitFileName[0].toString()+'-'+file_timestamp+'.'+splitFileName[1].toString();
+                                var downloadPath = downloadPath + file;
+                                fs.move('generated_by_others_by_customer' + fs.separator + fileName,'..'+fs.separator+'downloads' + fs.separator + 'generated_by_others' + fs.separator  + '' + CUSTOMER_DOWNLOAD_FOLDER + '' + fs.separator + newFileName);
+                                console.log("Successfully move file in customer folder.");
+                            }
+                        }
+                    });
+                    js finish
                 }
                 else
                 {
@@ -243,8 +324,7 @@ if errorMessage equals to ""
                     echo "Download File => File not download or record not found. FromDate:"+fromDates[n-1]+" - ToDate:"+toDates[n-1]
                 }
             }
-            //snap page
-            // End If btnLogin
+            echo "Download Folder Path : "+CUSTOMER_DOWNLOAD_PATH
         }
         else
         {
@@ -256,13 +336,21 @@ if errorMessage equals to ""
         echo "Login page is not load successfully. please try again!"
         //snap page
     }
+    // Logout user
+    if present('lnk_Signout')
+    {
+            click lnk_Signout
+            wait 3.00 seconds
+    }
 }
 else
 {
     echo "Error message : "+errorMessage
 }
 wait 3.00 seconds
+//zip -r zipfile.zip samples
 // use timer() as a stopwatch to track elapsed time between calls
 time_taken = timer()
 echo 'time taken - ' time_taken ' seconds'
 echo 'Script completed...'
+this.exit();
